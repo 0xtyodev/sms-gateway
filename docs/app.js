@@ -1,0 +1,9 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.0";
+const supabase=createClient(window.SMS_CONFIG.url,window.SMS_CONFIG.key);
+const $=id=>document.getElementById(id);
+const status=t=>$("status").textContent=t;
+async function render(){const {data:{session}}=await supabase.auth.getSession();$("login").hidden=!!session;$("inbox").hidden=!session;if(session)await load();}
+async function load(){status("Memuat pesan...");const {data,error}=await supabase.from("sms_messages").select("id,sender,body,received_at").order("received_at",{ascending:false}).limit(100);if(error){status("Gagal memuat: "+error.message);return;}const root=$("messages");root.replaceChildren();for(const m of data){const item=document.createElement("article");item.className="msg";const meta=document.createElement("div");meta.className="meta";const from=document.createElement("strong");from.textContent=m.sender;const date=document.createElement("span");date.textContent=new Date(m.received_at).toLocaleString("id-ID");meta.append(from,date);const body=document.createElement("div");body.className="body";body.textContent=m.body;item.append(meta,body);root.append(item);}status(data.length+" SMS ditampilkan");}
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();status("Memeriksa login...");const {error}=await supabase.auth.signInWithPassword({email:$("email").value,password:$("password").value});if(error)status(error.message);else await render();});
+$("logout").onclick=async()=>{await supabase.auth.signOut();status("Keluar berhasil");await render();};
+$("refresh").onclick=load;supabase.auth.onAuthStateChange(()=>{setTimeout(render,0)});render();
