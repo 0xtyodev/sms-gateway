@@ -1,0 +1,1 @@
+window.SMS_CONFIG = { url: "https://wzfltsihozilvwigpszq.supabase.co", key: "sb_publishable_NpeXVAZNiM0j_YCAAV-S_w_1atoa_La" };
